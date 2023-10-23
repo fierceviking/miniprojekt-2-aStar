@@ -9,6 +9,7 @@ mapHeight = 75
 # mapHeight = int(input("Enter map height: "))
 running = True
 
+# define the dictionary with terrain types along with their color and move cost
 terrainTypes = {
     'ocean': {'color': (0, 0, 255), 'moveCost': 6},
     'water': {'color': (50, 50, 255), 'moveCost': 3},
@@ -19,8 +20,8 @@ terrainTypes = {
     'mountainTop': {'color': (250, 250, 250), 'moveCost': 10}
 }
 
+# pygame boilerplate code
 pygame.init()
-
 screen = pygame.display.set_mode((mapWidth * 8, mapHeight * 8))
 pygame.display.set_caption("Pathfinder")
 
