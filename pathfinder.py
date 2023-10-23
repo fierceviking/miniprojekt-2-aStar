@@ -93,8 +93,8 @@ class MapGenerator:
         return total_height / num_neighbors
 
 class Pathfinder:
-    def __init__(self, map):
-        self.map = map
+    def __init__(self, mapCost):
+        self.mapCost = mapCost
         self.start = (random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1))
         print(self.start)
         self.end = (random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1))
@@ -102,12 +102,43 @@ class Pathfinder:
         while self.end == self.start:
             self.end = (random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1))
     
+    def aStar(self):
+        frontier = PriorityQueue()
+        frontier.put(self.start, 0)
+        cameFrom = {}
+        costSoFar = {}
+        cameFrom[self.start] = None
+        costSoFar[self.start] = 0
+        while not frontier.empty():
+            # current is a tuple of (priority, coordinate)
+            current = frontier.get()
+            if current[1] == self.end:
+                break
+            for next in self.neighbors(current[1]):
+                newCost = costSoFar[current[1]] + self.cost(current[1], next)
+                if next not in costSoFar or newCost < costSoFar[next]:
+                    costSoFar[next] = newCost
+                    priority = newCost + self.heuristic(self.end, next)
+                    frontier.put(next, priority)
+                    cameFrom[next] = current[1]
+    
     def heuristic(self, current, end):
-        return abs(current.x - end.x) + abs(current.y - end.y)
+        return abs(current.x - self.end.x) + abs(current.y - self.end.y)
+    
+    def neighbors(self, current):
+        neighbors = 0
+        for i in [-1, 0, 1]:
+            for j in [-1, 0, 1]:
+                if 0 <= x + i < mapWidth and 0 <= y + j < mapHeight:
+                    neighbors += 1
+        return neighbors
     
     def neighborsCost(self, x, y):
         neighbors = []
-        neighbors.append((x - 1, y))
+        for i in [-1, 0, 1]:
+            for j in [-1, 0, 1]:
+                if 0 <= x + i < mapWidth and 0 <= y + j < mapHeight:
+                    value = 
             
 map = MapGenerator(mapWidth, mapHeight)
 map.generateMap()
@@ -117,17 +148,19 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        # check if space is pressed
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            # generate a new map
             map = MapGenerator(mapWidth, mapHeight)
             map.generateMap()
             cost = Pathfinder(map.mapCost)
-  
+    # draw the map in pygame
     for x in range(mapWidth):
         for y in range(mapHeight):
             pygame.draw.rect(screen, map.map[x][y], (x * 8, y * 8, 8, 8))
             pygame.draw.rect(screen, (255,0,0), (cost.start[0] * 8, cost.start[1] * 8, 8, 8))
             pygame.draw.rect(screen, (0,255,255), (cost.end[0] * 8, cost.end[1] * 8, 8, 8))
-    
+    # update the display
     pygame.display.flip()
-
+# exit pygame
 pygame.quit()
