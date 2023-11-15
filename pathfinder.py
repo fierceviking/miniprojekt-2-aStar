@@ -3,7 +3,7 @@ import pygame
 import numpy as np
 from queue import PriorityQueue
 
-mapWidth = 75
+mapWidth = 100
 mapHeight = 75
 # mapWidth = int(input("Enter map width: "))
 # mapHeight = int(input("Enter map height: "))
@@ -22,12 +22,17 @@ terrainTypes = {
 
 # pygame boilerplate code
 pygame.init()
-screen = pygame.display.set_mode((mapWidth * 8, mapHeight * 8))
+if mapWidth > mapHeight:
+    sc_modifier = 800 // mapWidth
+else:
+    sc_modifier = 800 // mapHeight
+screen = pygame.display.set_mode((mapWidth * sc_modifier, mapHeight * sc_modifier))
 pygame.display.set_caption("Pathfinder")
 
+# here we start the good stuff
 class MapGenerator:
     def __init__(self, mapWidth, mapHeight):
-        # initiate map by mapWidth and mapHeight and make a 2D array which is filled with 0
+        # initiate map by mapWidth and mapHeight and make a 2D array which is filled with 0's
         self.mapWidth = mapWidth
         self.mapHeight = mapHeight
         self.map = np.zeros((mapWidth, mapHeight, 3), dtype=np.uint8)
@@ -35,13 +40,15 @@ class MapGenerator:
 
     def generateMap(self):
         # select num_points random points to use for terrain generation
+        # (lower num_points means more water as there are less points to generate land)
         num_points = 10
-        # and make a list with the random coordinates
+        # and make a list with the random coordinates within the map borders. The coordinates are tuples of (x, y)
         points = [(random.randint(0, self.mapWidth - 1), random.randint(0, self.mapHeight - 1)) for _ in range(num_points)]
         # loop over the entire map
         for x in range(self.mapWidth):
             for y in range(self.mapHeight):
                 # calculate the distance from the current point to all the random points
+                # the starting value is infinity so that the first distance will always be smaller
                 min_distance = float('inf')
                 for point_x, point_y in points:
                     distance = np.sqrt((x - point_x) ** 2 + (y - point_y) ** 2)
@@ -92,57 +99,28 @@ class MapGenerator:
         # return the average height of the neighbors
         return total_height / num_neighbors
 
-class Pathfinder:
-    def __init__(self, mapCost):
-        self.mapCost = mapCost
-        self.start = (random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1))
-        print(self.start)
-        self.end = (random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1))
-        print(self.end)
-        while self.end == self.start:
-            self.end = (random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1))
+class node:
+    def __init__(self, x, y, cost, heuristic):
+        self.x = x
+        self.y = y
+        self.cost = cost
+        self.heuristic = heuristic
+        self.f = cost + heuristic
+        self.parent = None
     
-    def aStar(self):
-        frontier = PriorityQueue()
-        frontier.put(self.start, 0)
-        cameFrom = {}
-        costSoFar = {}
-        cameFrom[self.start] = None
-        costSoFar[self.start] = 0
-        while not frontier.empty():
-            # current is a tuple of (priority, coordinate)
-            current = frontier.get()
-            if current[1] == self.end:
-                break
-            for next in self.neighbors(current[1]):
-                newCost = costSoFar[current[1]] + self.cost(current[1], next)
-                if next not in costSoFar or newCost < costSoFar[next]:
-                    costSoFar[next] = newCost
-                    priority = newCost + self.heuristic(self.end, next)
-                    frontier.put(next, priority)
-                    cameFrom[next] = current[1]
+    def heuristic(self, other):
+        return abs(self.x - other.x) + abs(self.y - other.y)
     
-    def heuristic(self, current, end):
-        return abs(current.x - self.end.x) + abs(current.y - self.end.y)
-    
-    def neighbors(self, current):
-        neighbors = 0
-        for i in [-1, 0, 1]:
-            for j in [-1, 0, 1]:
-                if 0 <= x + i < mapWidth and 0 <= y + j < mapHeight:
-                    neighbors += 1
-        return neighbors
-    
-    def neighborsCost(self, x, y):
-        neighbors = []
-        for i in [-1, 0, 1]:
-            for j in [-1, 0, 1]:
-                if 0 <= x + i < mapWidth and 0 <= y + j < mapHeight:
-                    value = 
-            
+    def __lt__(self, other):
+        return self.f < other.f
+
+class aStar:
+    def __init__(self, start, end):
+        self.start = node(*start, 0, node.heuristic(start, end))
+        self.end = node(*end, 0, 0)
+
 map = MapGenerator(mapWidth, mapHeight)
 map.generateMap()
-cost = Pathfinder(map.mapCost)
 
 while running:
     for event in pygame.event.get():
@@ -153,13 +131,13 @@ while running:
             # generate a new map
             map = MapGenerator(mapWidth, mapHeight)
             map.generateMap()
-            cost = Pathfinder(map.mapCost)
+            mapCost = map.mapCost
+            np.savetxt('mapCost.txt', mapCost, fmt='%d')
     # draw the map in pygame
     for x in range(mapWidth):
         for y in range(mapHeight):
-            pygame.draw.rect(screen, map.map[x][y], (x * 8, y * 8, 8, 8))
-            pygame.draw.rect(screen, (255,0,0), (cost.start[0] * 8, cost.start[1] * 8, 8, 8))
-            pygame.draw.rect(screen, (0,255,255), (cost.end[0] * 8, cost.end[1] * 8, 8, 8))
+            pygame.draw.rect(screen, map.map[x][y], (x * sc_modifier, y * sc_modifier, sc_modifier, sc_modifier))
+
     # update the display
     pygame.display.flip()
 # exit pygame
