@@ -78,6 +78,13 @@ class MapGenerator:
         else:
             return 'ocean'
 
+import random
+import pygame
+import numpy as np
+from queue import PriorityQueue
+
+# ... (rest of the code remains unchanged)
+
 class Node:
     def __init__(self, x, y, cost, heuristic):
         self.x = x
@@ -87,17 +94,20 @@ class Node:
         self.f = cost + heuristic
         self.parent = None
 
-    @staticmethod
     def heuristic_cal(self, other):
         return abs(self.x - other.x) + abs(self.y - other.y)
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
 
     def __lt__(self, other):
         return self.f < other.f
 
-
 class AStar:
     def __init__(self, start, end):
-        self.start = self.create_node(start[0], start[1], 0, Node.heuristic_cal(Node(*start), Node(*end)))
+        start_node = self.create_node(start[0], start[1], 0, 0)
+        start_node.heuristic = start_node.heuristic_cal(self.create_node(end[0], end[1], 0, 0))
+        self.start = start_node
         self.end = self.create_node(end[0], end[1], 0, 0)
         self.open = PriorityQueue()
         self.open.put(self.start)
@@ -105,31 +115,38 @@ class AStar:
         self.path = []
 
     def create_node(self, x, y, cost, heuristic):
-        return Node(x, y, cost, heuristic)
+        node = Node(x, y, cost, heuristic)
+        print(f"Node created: {node.x}, {node.y}, Cost: {cost}, Heuristic: {heuristic}")
+        return node
 
     def search(self, mapCost):
         while not self.open.empty():
             current = self.open.get()
+
             if current == self.end:
                 while current.parent:
                     self.path.append((current.x, current.y))
                     current = current.parent
                 self.path.append((current.x, current.y))
                 return self.path[::-1]
+
             self.closed.add(current)
             for x, y in ((0, 1), (0, -1), (1, 0), (-1, 0)):
                 neighbor = self.create_node(
                     current.x + x, current.y + y,
-                    current.cost + mapCost[current.x + x, current.y + y],
-                    Node.heuristic_cal((current.x + x, current.y + y), self.end)
+                    current.cost + mapCost[current.x + x, current.y + y],  # Use mapCost for move cost
+                    Node.heuristic_cal(Node(current.x + x, current.y + y), self.end)
                 )
+
                 if 0 <= neighbor.x < mapWidth and 0 <= neighbor.y < mapHeight:
                     if neighbor in self.closed:
                         continue
+
                     if neighbor not in self.open.queue:
                         neighbor.parent = current
                         self.open.put(neighbor)
-        print(self.path)
+
+        print("No path found!")
         return None
 
 map = MapGenerator(mapWidth, mapHeight)
@@ -153,15 +170,26 @@ while running:
             end = (random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1))
             search = AStar(start, end)
 
+    # Draw the map
     for x in range(mapWidth):
         for y in range(mapHeight):
             pygame.draw.rect(screen, map.map[x][y], (x * sc_modifier, y * sc_modifier, sc_modifier, sc_modifier))
 
+    # Check if a path exists
     if search and search.path:
+        # Draw the optimal path
         for i in range(len(search.path) - 1):
-            start_point = (search.path[i][0] * sc_modifier + sc_modifier // 2, search.path[i][1] * sc_modifier + sc_modifier // 2)
-            end_point = (search.path[i + 1][0] * sc_modifier + sc_modifier // 2, search.path[i + 1][1] * sc_modifier + sc_modifier // 2)
+            start_point = (
+                search.path[i][0] * sc_modifier + sc_modifier // 2,
+                search.path[i][1] * sc_modifier + sc_modifier // 2
+            )
+            end_point = (
+                search.path[i + 1][0] * sc_modifier + sc_modifier // 2,
+                search.path[i + 1][1] * sc_modifier + sc_modifier // 2
+            )
             pygame.draw.line(screen, (255, 0, 0), start_point, end_point, 2)
+    else:
+        print("No path found!")
 
     pygame.display.flip()
 
