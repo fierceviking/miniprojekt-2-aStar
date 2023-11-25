@@ -9,6 +9,7 @@ class MapGenerator:
         self.map = np.zeros((mapwidth, mapheight), dtype=np.uint8)
 
     def generateMap(self):
+        self.map = np.zeros((self.mapwidth, self.mapheight), dtype=np.uint8)
         # generate a list of random points
         for _ in range(self.points):
             x = random.randint(0, self.mapwidth - 1)
