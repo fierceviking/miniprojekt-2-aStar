@@ -1,5 +1,3 @@
-
-
 class breadthFirst:
     def __init__(self, map, start, end):
         self.map = map
