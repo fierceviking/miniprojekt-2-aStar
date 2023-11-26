@@ -60,23 +60,31 @@ def draw_path(path):
 draw_map()
 pygame.display.update()
 
+# this is the main loop which runs until the user closes the pygame window
 while running:
+    # here we check all the events in pygame
     for event in pygame.event.get():
+        # if the pygame window is closed, we set the running boolean to false
         if event.type == pygame.QUIT:
             running = False
+        # if the user presses the space bar, we generate a new map and find a new path
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            # first we generate new start and end nodes on nodes that are walkable
             start = [random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1)]
             while map_generator.map[start[0]][start[1]] == 255:
                 start = [random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1)]
             end = [random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1)]
             while map_generator.map[end[0]][end[1]] == 255:
                 end = [random.randint(0, mapWidth - 1), random.randint(0, mapHeight - 1)]
+            # then we generate a new map and run the breadth first algorithm
             bfs = breadthFirst(map_generator.generateMap(), start, end)
+            # then we draw the map and update the pygame window
             draw_map()
             pygame.display.update()
-
+    # 
     if not bfs.found:
         bfs.findPath()
         draw_path(bfs.path)
 
+# here we quit pygame
 pygame.quit()
