@@ -8,7 +8,7 @@ import random
 pygame.init()
 
 # then we take some user input for the map width, map height, and number of points
-print('map sizes above xx125 may cause lag')
+print('map sizes above 200x125 may cause lag')
 mapWidth = int(input("Enter map width: "))
 mapHeight = int(input("Enter map height: "))
 points = int(input("Enter number of points: "))
@@ -52,7 +52,7 @@ def draw_map():
 def draw_path(path):
     # here we loop through the path-list and draw each node
     for node in path:
-        pygame.draw.rect(screen, (0, 0, 255), (node[0] * sizeScaler, node[1] * sizeScaler, sizeScaler, sizeScaler))
+        pygame.draw.rect(screen, (255, 255, 0), (node[0] * sizeScaler, node[1] * sizeScaler, sizeScaler, sizeScaler))
     # and update the pygame window
     pygame.display.update()
 

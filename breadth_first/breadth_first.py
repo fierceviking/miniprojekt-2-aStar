@@ -69,6 +69,9 @@ class breadthFirst:
             # here we reverse the path because we added the nodes from the end node to the start node
             # but we want the path from the start node to the end node
             self.path.reverse()
+            # here we remove the start and end nodes from the path because we don't want to draw them
+            self.path.pop(0)
+            self.path.pop(-1)
             # here we print the path
             print(self.path)
             # and return the path
