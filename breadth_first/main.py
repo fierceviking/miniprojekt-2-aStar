@@ -81,7 +81,7 @@ while running:
             # then we draw the map and update the pygame window
             draw_map()
             pygame.display.update()
-    # 
+    # if the algorithm has not found the end node, we find the path
     if not bfs.found:
         bfs.findPath()
         draw_path(bfs.path)
