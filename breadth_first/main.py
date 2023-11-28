@@ -49,7 +49,7 @@ def main():
     def draw_path(path):
         # here we loop through the path-list and draw each node
         for node in path:
-            pygame.draw.rect(screen, (255, 255, 0), (node[0] * sizeScaler, node[1] * sizeScaler, sizeScaler, sizeScaler))
+            pygame.draw.circle(screen, (255, 255, 0), (node[0] * sizeScaler + sizeScaler // 2, node[1] * sizeScaler + sizeScaler // 2), sizeScaler // 3)
         # and update the pygame window
         pygame.display.update()
 
